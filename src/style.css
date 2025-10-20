@@ -1,0 +1,40 @@
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: #f7f7f7;
+  color: #111;
+}
+
+.wrap { max-width: 1000px; margin: 24px auto; padding: 0 16px; }
+
+header {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+}
+
+.controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+input, select, button {
+  padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px; background: white;
+}
+
+.grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.card {
+  background: white; border: 1px solid #e6e6e6; border-radius: 12px;
+  padding: 12px; display: flex; gap: 12px; align-items: center;
+}
+.card img { width: 48px; height: 48px; object-fit: contain; }
+
+.muted { color: #666; }
+.grow { flex: 1; }
+.badge { background: #eee; padding: 2px 8px; border-radius: 999px; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+
+hr { border: none; border-top: 1px solid #eee; margin: 16px 0; }
+
+aside { background: white; border: 1px solid #e6e6e6; border-radius: 12px; padding: 12px; }
+.footer { margin-top: 16px; display: flex; gap: 8px; align-items: center; }
+.total { font-weight: 700; }
