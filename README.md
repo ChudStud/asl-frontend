@@ -1,44 +1,31 @@
-# vue-frontend
+# After School Lessons Front-End (CST3144 Coursework)
 
-This template should help get you started developing with Vue 3 in Vite.
+## Overview
+This project is the **front-end** of the CST3144 Full Stack Development coursework at **Middlesex University**.  
+It’s a Vue 3 web app that allows users to **browse, search, sort, and purchase after-school lessons**.  
+The app will later connect to an **Express + MongoDB backend** via REST APIs.
 
-## Recommended IDE Setup
+---
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Technologies Used
+- **Vue.js 3** – Front-end framework  
+- **Vite** – Build and dev tool  
+- **HTML5 / CSS3 / JavaScript (ES6)**  
+- **Git / GitHub** – Version control and hosting
 
-## Recommended Browser Setup
+---
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## Features Implemented
+| Feature | Description |
+|----------|--------------|
+| **Lesson Display** | Shows 10 + lessons (subject, location, price, spaces, image). |
+| **Search** | Filters lessons by subject or location. |
+| **Sorting** | Sorts by subject, location, price, or spaces (ascending/descending). |
+| **Add to Cart** | Adds a lesson to the cart and reduces its available spaces. |
+| **Cart Management** | Displays selected lessons, allows quantity changes or removal. |
+| **Checkout** | Validates user **Name** (letters + spaces) and **Phone** (10-11 digits). |
+| **Responsive Layout** | Uses CSS Grid / Flexbox for desktop and laptop screens. |
 
-## Customize configuration
+---
 
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+## Folder Structure
