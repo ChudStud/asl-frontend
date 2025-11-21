@@ -3,17 +3,30 @@
     <h3>Cart</h3>
 
     <template v-if="items.length">
-      <div class="card" v-for="row in items" :key="row.id">
+      <div class="card" v-for="row in items" :key="row._id">
         <div class="grow">
           <strong>{{ row.subject }}</strong> · £{{ row.price }}
+
           <div class="muted">
             Qty:
-            <button @click="$emit('dec', row.id)" :disabled="row.qty === 1">-</button>
+            <button 
+              @click="$emit('dec', row._id)" 
+              :disabled="row.qty === 1"
+            >
+              -
+            </button>
+
             <span class="badge">{{ row.qty }}</span>
-            <button @click="$emit('inc', row.id)">+</button>
+
+            <button 
+              @click="$emit('inc', row._id)"
+            >
+              +
+            </button>
           </div>
         </div>
-        <button @click="$emit('remove', row.id)">Remove</button>
+
+        <button @click="$emit('remove', row._id)">Remove</button>
       </div>
 
       <div class="footer">
@@ -29,10 +42,10 @@
 
 <script>
 export default {
-  name: 'Cart',
+  name: "Cart",
   props: {
     items: { type: Array, required: true },
     total: { type: Number, required: true }
   }
-}
+};
 </script>
