@@ -12,128 +12,241 @@
           <option value="spaces">Spaces</option>
         </select>
         <button @click="asc = !asc">{{ asc ? 'Ascending' : 'Descending' }}</button>
+
+        <!-- Toggle Cart / Lessons -->
+        <button @click="toggleCart">{{ showCart ? "View Lessons" : "View Cart" }}</button>
       </div>
     </header>
 
-    <!-- Lessons -->
-    <LessonList :lessons="visibleLessons" @add="addToCart" />
+    <!-- Lessons Page -->
+    <LessonList
+      v-if="!showCart && !goCheckout"
+      :lessons="visibleLessons"
+      @add="addToCart"
+    />
 
-    <hr />
-
-    <!-- Cart -->
+    <!-- Cart Page -->
     <Cart
+      v-if="showCart && !goCheckout"
       :items="cart"
       :total="cartTotal"
       @inc="incQty"
       @dec="decQty"
       @remove="removeFromCart"
       @empty="emptyCart"
-      @checkout="goCheckout = true"
+      @checkout="startCheckout"
     />
 
-    <!-- Checkout -->
-    <template v-if="goCheckout">
-      <hr />
-      <Checkout
-        :items="cart"
-        :total="cartTotal"
-        @cancel="goCheckout = false"
-        @success="afterCheckout"
-      />
-    </template>
+    <!-- Checkout Page -->
+    <Checkout
+      v-if="goCheckout"
+      :items="cart"
+      :total="cartTotal"
+      @cancel="cancelCheckout"
+      @success="finishCheckout"
+    />
   </div>
 </template>
 
 <script>
-import LessonList from './components/LessonList.vue'
-import Cart from './components/Cart.vue'
-import Checkout from './components/Checkout.vue'
+import LessonList from "./components/LessonList.vue";
+import Cart from "./components/Cart.vue";
+import Checkout from "./components/Checkout.vue";
 
 export default {
-  name: 'App',
+  name: "App",
   components: { LessonList, Cart, Checkout },
+
   data() {
     return {
+      backend: "http://localhost:3000", // ← To be replaced with deployed backend (gpt this was the comment you wrote i didn't change it)
+
       // UI state
-      search: '',
-      sortBy: 'subject',
+      search: "",
+      sortBy: "subject",
       asc: true,
+      showCart: false,
       goCheckout: false,
 
-      // Data (local now; later replace with fetch from backend)
-      lessons: [
-        { id:1,  subject:'Math',      location:'Hendon',        price:100, spaces:5, image:'https://cdn-icons-png.flaticon.com/512/167/167755.png' },
-        { id:2,  subject:'Science',   location:'Colindale',     price: 80, spaces:5, image:'https://cdn-icons-png.flaticon.com/512/2965/2965871.png' },
-        { id:3,  subject:'English',   location:'Mill Hill',      price: 70, spaces:5, image:'https://cdn-icons-png.flaticon.com/512/1006/1006540.png' },
-        { id:4,  subject:'History',   location:'Finchley',       price: 90, spaces:5, image:'https://cdn-icons-png.flaticon.com/512/1086/1086933.png' },
-        { id:5,  subject:'Art',       location:'Brent Cross',    price: 60, spaces:5, image:'https://cdn-icons-png.flaticon.com/512/3062/3062634.png' },
-        { id:6,  subject:'Music',     location:'Barnet',         price: 75, spaces:5, image:'https://www.flaticon.com/free-icons/musical-note' },
-        { id:7,  subject:'Dance',     location:'Edgware',        price: 85, spaces:5, image:'https://cdn-icons-png.flaticon.com/512/2463/2463510.png' },
-        { id:8,  subject:'Drama',     location:'Golders Green',  price: 95, spaces:5, image:'https://cdn-icons-png.flaticon.com/512/2966/2966327.png' },
-        { id:9,  subject:'Computing', location:'Kingsbury',      price:120, spaces:5, image:'https://cdn-icons-png.flaticon.com/512/1055/1055687.png' },
-        { id:10, subject:'Sports',    location:'Colindale',      price: 50, spaces:5, image:'https://cdn-icons-png.flaticon.com/512/2966/2966329.png' }
-      ],
-
-      cart: []
-    }
+      // Data from backend
+      lessons: [],
+      cart: [],
+    };
   },
+
+  async mounted() {
+    await this.loadLessons();
+  },
+
   computed: {
     visibleLessons() {
-      const q = this.search.trim().toLowerCase()
-      let arr = this.lessons.filter(l =>
-        !q ||
-        l.subject.toLowerCase().includes(q) ||
-        l.location.toLowerCase().includes(q)
-      )
-      arr.sort((a,b) => {
-        const A = a[this.sortBy], B = b[this.sortBy]
-        const cmp = typeof A === 'string' ? A.localeCompare(B) : A - B
-        return this.asc ? cmp : -cmp
-      })
-      return arr
+      const q = this.search.trim().toLowerCase();
+
+      let arr = this.lessons.filter(
+        (l) =>
+          !q ||
+          l.subject.toLowerCase().includes(q) ||
+          l.location.toLowerCase().includes(q)
+      );
+
+      arr.sort((a, b) => {
+        const A = a[this.sortBy];
+        const B = b[this.sortBy];
+        const cmp = typeof A === "string" ? A.localeCompare(B) : A - B;
+        return this.asc ? cmp : -cmp;
+      });
+
+      return arr;
     },
+
     cartTotal() {
-      return this.cart.reduce((s, r) => s + r.price * r.qty, 0)
-    }
+      return this.cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+    },
   },
+
   methods: {
-    // ----- cart
-    addToCart(lessonId) {
-      const lesson = this.lessons.find(l => l.id === lessonId)
-      if (!lesson || lesson.spaces <= 0) return
-      lesson.spaces--
-      const row = this.cart.find(r => r.id === lessonId)
-      row ? row.qty++ : this.cart.push({ id: lesson.id, subject: lesson.subject, price: lesson.price, qty: 1 })
-    },
-    removeFromCart(id) {
-      const row = this.cart.find(r => r.id === id)
-      const lesson = this.lessons.find(l => l.id === id)
-      if (row && lesson) lesson.spaces += row.qty
-      this.cart = this.cart.filter(r => r.id !== id)
-    },
-    incQty(id) {
-      const row = this.cart.find(r => r.id === id)
-      const lesson = this.lessons.find(l => l.id === id)
-      if (lesson && lesson.spaces > 0) { row.qty++; lesson.spaces-- }
-    },
-    decQty(id) {
-      const row = this.cart.find(r => r.id === id)
-      const lesson = this.lessons.find(l => l.id === id)
-      if (row.qty > 1) { row.qty--; if (lesson) lesson.spaces++ }
-    },
-    emptyCart() {
-      for (const row of this.cart) {
-        const l = this.lessons.find(x => x.id === row.id)
-        if (l) l.spaces += row.qty
+    /* ============================
+       FETCH LESSONS FROM BACKEND
+       ============================ */
+    async loadLessons() {
+      try {
+        const res = await fetch(`${this.backend}/lessons`);
+        const data = await res.json();
+
+        // Add lowercase subject for image filenames
+        data.forEach((l) => {
+          l.subjectLower = l.subject.toLowerCase();
+        });
+
+        this.lessons = data;
+      } catch (err) {
+        console.error("Failed to load lessons:", err);
       }
-      this.cart = []
     },
-    afterCheckout() {
-      // success from Checkout.vue
-      this.emptyCart()
-      this.goCheckout = false
-      //  when backend exists: refetch lessons from server here
-    }
-  }
-}
+
+    /* ============================
+           CART FUNCTIONS
+       ============================ */
+    addToCart(lessonId) {
+      const lesson = this.lessons.find((l) => l._id === lessonId);
+      if (!lesson || lesson.spaces <= 0) return;
+
+      lesson.spaces--;
+
+      const existing = this.cart.find((c) => c._id === lessonId);
+      if (existing) {
+        existing.qty++;
+      } else {
+        this.cart.push({
+          _id: lesson._id,
+          subject: lesson.subject,
+          price: lesson.price,
+          qty: 1,
+          spaces: lesson.spaces, // Track updated spaces for PUT later
+        });
+      }
+    },
+
+    removeFromCart(id) {
+      const item = this.cart.find((c) => c._id === id);
+      const lesson = this.lessons.find((l) => l._id === id);
+
+      if (item && lesson) lesson.spaces += item.qty;
+
+      this.cart = this.cart.filter((c) => c._id !== id);
+    },
+
+    incQty(id) {
+      const item = this.cart.find((c) => c._id === id);
+      const lesson = this.lessons.find((l) => l._id === id);
+
+      if (lesson.spaces > 0) {
+        item.qty++;
+        lesson.spaces--;
+      }
+    },
+
+    decQty(id) {
+      const item = this.cart.find((c) => c._id === id);
+      const lesson = this.lessons.find((l) => l._id === id);
+
+      if (item.qty > 1) {
+        item.qty--;
+        lesson.spaces++;
+      }
+    },
+
+    emptyCart() {
+      for (const item of this.cart) {
+        const lesson = this.lessons.find((l) => l._id === item._id);
+        if (lesson) lesson.spaces += item.qty;
+      }
+      this.cart = [];
+    },
+
+    toggleCart() {
+      if (this.goCheckout) return;
+      this.showCart = !this.showCart;
+    },
+
+    /* ============================
+           CHECKOUT FLOW
+       ============================ */
+    startCheckout() {
+      if (this.cart.length === 0) return;
+      this.goCheckout = true;
+      this.showCart = false;
+    },
+
+    cancelCheckout() {
+      this.goCheckout = false;
+      this.showCart = true;
+    },
+
+    async finishCheckout(orderDetails) {
+      try {
+        /* ===============================
+            1. POST ORDER TO BACKEND
+           =============================== */
+        await fetch(`${this.backend}/orders`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: orderDetails.name,
+            phone: orderDetails.phone,
+            items: this.cart,
+          }),
+        });
+
+        /* ===============================
+            2. UPDATE SPACES IN BACKEND
+           =============================== */
+        for (const item of this.cart) {
+          const lesson = this.lessons.find((l) => l._id === item._id);
+
+          await fetch(`${this.backend}/lessons/${item._id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              spaces: lesson.spaces,
+            }),
+          });
+        }
+
+        /* ===============================
+            3. REFRESH FRONTEND DATA
+           =============================== */
+        await this.loadLessons();
+        this.cart = [];
+        this.goCheckout = false;
+        this.showCart = false;
+
+        alert("Order submitted successfully!");
+      } catch (err) {
+        console.error("Checkout failed:", err);
+        alert("An error occurred. Please try again.");
+      }
+    },
+  },
+};
 </script>
