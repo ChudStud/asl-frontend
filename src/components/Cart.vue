@@ -2,16 +2,35 @@
   <aside>
     <h3>Cart</h3>
 
+    <!-- 
+      If there are items in the cart, display them.
+      Otherwise show the "Your cart is empty" message.
+    -->
     <template v-if="items.length">
+
+      <!-- 
+        Loop through each item in the cart.
+        Each "row" represents one lesson the user has added.
+        Uses MongoDB _id as the unique key.
+      -->
       <div class="card" v-for="row in items" :key="row._id">
+
         <div class="grow">
+          <!-- Lesson subject + price -->
           <strong>{{ row.subject }}</strong> · £{{ row.price }}
 
           <div class="muted" style="margin-top: 8px;">
             Qty:
 
-            <!-- Modern Slim Quantity Control -->
+            <!-- 
+              Quantity selector:
+              - Displays current quantity
+              - Allows increasing/decreasing qty
+              - Emits events to App.vue (which updates cart & lesson spaces)
+            -->
             <div class="qty-box">
+
+              <!-- Decrease quantity (disabled when qty = 1) -->
               <button
                 class="qty-btn"
                 @click="$emit('dec', row._id)"
@@ -20,25 +39,37 @@
                 -
               </button>
 
+              <!-- Current quantity -->
               <span class="qty-num">{{ row.qty }}</span>
 
+              <!-- Increase quantity -->
               <button
                 class="qty-btn"
                 @click="$emit('inc', row._id)"
               >
                 +
               </button>
+
             </div>
           </div>
         </div>
 
-        <!-- Remove Button -->
+        <!-- 
+          Remove button:
+          Emits "remove" event with row._id.
+          App.vue handles restoring spaces and deleting the item.
+        -->
         <button class="remove-btn" @click="$emit('remove', row._id)">
           Remove
         </button>
       </div>
 
-      <!-- Footer Section -->
+      <!-- 
+        Cart footer:
+        - Shows total price
+        - Checkout button
+        - Empty cart button
+      -->
       <div class="footer">
         <span class="total">Total: £{{ total }}</span>
 
@@ -49,7 +80,7 @@
       </div>
     </template>
 
-    <!-- Empty Cart -->
+    <!-- Shown if no items are in the cart -->
     <p v-else class="muted">Your cart is empty.</p>
   </aside>
 </template>
@@ -57,6 +88,14 @@
 <script>
 export default {
   name: "Cart",
+
+  /*
+    props:
+    - items: array of all cart items (controlled by App.vue)
+    - total: computed total price passed from App.vue
+    This component does NOT modify data itself.
+    It simply emits actions like "inc", "dec", "remove", "checkout".
+  */
   props: {
     items: { type: Array, required: true },
     total: { type: Number, required: true },
@@ -65,7 +104,7 @@ export default {
 </script>
 
 <style scoped>
-/* Minor scoped tweaks for Cart only */
+/* Styles below only affect this component */
 
 .remove-btn {
   background: #9fb2ff;
