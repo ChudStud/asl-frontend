@@ -1,31 +1,42 @@
 <template>
   <div class="wrap">
-    <!-- Search + Sort -->
+
+    <!-- HEADER SECTION:
+         - Contains the title, search bar, sorting options,
+           and button to switch between lessons and the cart. -->
     <header>
       <h1>After School Lessons</h1>
       <div class="controls">
+
+        <!-- Search input: filters lessons by subject/location -->
         <input v-model="search" placeholder="Search subject or location…" />
+
+        <!-- Sorting dropdown: updates the sort field -->
         <select v-model="sortBy">
           <option value="subject">Subject</option>
           <option value="location">Location</option>
           <option value="price">Price</option>
           <option value="spaces">Spaces</option>
         </select>
+
+        <!-- Sort order toggle -->
         <button @click="asc = !asc">{{ asc ? 'Ascending' : 'Descending' }}</button>
 
-        <!-- Toggle Cart / Lessons -->
+        <!-- Switch between Lessons and Cart page -->
         <button @click="toggleCart">{{ showCart ? "View Lessons" : "View Cart" }}</button>
       </div>
     </header>
 
-    <!-- Lessons Page -->
+    <!-- LESSONS PAGE:
+         Shown when cart page and checkout page are both not active -->
     <LessonList
       v-if="!showCart && !goCheckout"
       :lessons="visibleLessons"
       @add="addToCart"
     />
 
-    <!-- Cart Page -->
+    <!-- CART PAGE:
+         Shown when user switches to the cart (but not to checkout yet) -->
     <Cart
       v-if="showCart && !goCheckout"
       :items="cart"
@@ -37,7 +48,8 @@
       @checkout="startCheckout"
     />
 
-    <!-- Checkout Page -->
+    <!-- CHECKOUT PAGE:
+         Shown once user proceeds from the cart -->
     <Checkout
       v-if="goCheckout"
       :items="cart"
@@ -59,29 +71,32 @@ export default {
 
   data() {
     return {
-      backend: "http://localhost:3000", // ← To be replaced with deployed backend (gpt this was the comment you wrote i didn't change it)
+      backend: "http://localhost:3000", // Backend API base URL
 
-      // UI state
-      search: "",
-      sortBy: "subject",
-      asc: true,
-      showCart: false,
-      goCheckout: false,
+      // UI state variables
+      search: "",          // Search bar input
+      sortBy: "subject",   // Current sort method
+      asc: true,           // Sort order (ascending/descending)
+      showCart: false,     // Controls whether Cart or Lessons page is shown
+      goCheckout: false,   // Controls visibility of Checkout page
 
-      // Data from backend
-      lessons: [],
-      cart: [],
+      // Data loaded from backend / user selections
+      lessons: [],         // All lessons from backend
+      cart: [],            // User's selected items
     };
   },
 
+  // Fetch lessons as soon as the app loads
   async mounted() {
     await this.loadLessons();
   },
 
   computed: {
+    // Returns lessons after applying search + sorting
     visibleLessons() {
       const q = this.search.trim().toLowerCase();
 
+      // Filter lessons
       let arr = this.lessons.filter(
         (l) =>
           !q ||
@@ -89,6 +104,7 @@ export default {
           l.location.toLowerCase().includes(q)
       );
 
+      // Sort lessons
       arr.sort((a, b) => {
         const A = a[this.sortBy];
         const B = b[this.sortBy];
@@ -99,21 +115,20 @@ export default {
       return arr;
     },
 
+    // Calculates total price of items in cart
     cartTotal() {
       return this.cart.reduce((sum, item) => sum + item.price * item.qty, 0);
     },
   },
 
   methods: {
-    /* ============================
-       FETCH LESSONS FROM BACKEND
-       ============================ */
+    /* Load all lessons from backend */
     async loadLessons() {
       try {
         const res = await fetch(`${this.backend}/lessons`);
         const data = await res.json();
 
-        // Add lowercase subject for image filenames
+        // Add lowercase subject so LessonList knows which image to load
         data.forEach((l) => {
           l.subjectLower = l.subject.toLowerCase();
         });
@@ -124,14 +139,12 @@ export default {
       }
     },
 
-    /* ============================
-           CART FUNCTIONS
-       ============================ */
+    /* Add a lesson to the cart and update spaces in UI */
     addToCart(lessonId) {
       const lesson = this.lessons.find((l) => l._id === lessonId);
       if (!lesson || lesson.spaces <= 0) return;
 
-      lesson.spaces--;
+      lesson.spaces--; // Reduce available spaces
 
       const existing = this.cart.find((c) => c._id === lessonId);
       if (existing) {
@@ -142,11 +155,12 @@ export default {
           subject: lesson.subject,
           price: lesson.price,
           qty: 1,
-          spaces: lesson.spaces, // Track updated spaces for PUT later
+          spaces: lesson.spaces,
         });
       }
     },
 
+    /* Remove entire item from cart and restore its spaces */
     removeFromCart(id) {
       const item = this.cart.find((c) => c._id === id);
       const lesson = this.lessons.find((l) => l._id === id);
@@ -156,6 +170,7 @@ export default {
       this.cart = this.cart.filter((c) => c._id !== id);
     },
 
+    /* Increase quantity of a cart item (if spaces remain) */
     incQty(id) {
       const item = this.cart.find((c) => c._id === id);
       const lesson = this.lessons.find((l) => l._id === id);
@@ -166,6 +181,7 @@ export default {
       }
     },
 
+    /* Decrease quantity (not below 1) */
     decQty(id) {
       const item = this.cart.find((c) => c._id === id);
       const lesson = this.lessons.find((l) => l._id === id);
@@ -176,6 +192,7 @@ export default {
       }
     },
 
+    /* Completely empty the cart */
     emptyCart() {
       for (const item of this.cart) {
         const lesson = this.lessons.find((l) => l._id === item._id);
@@ -184,30 +201,29 @@ export default {
       this.cart = [];
     },
 
+    /* Switch between lessons and cart */
     toggleCart() {
       if (this.goCheckout) return;
       this.showCart = !this.showCart;
     },
 
-    /* ============================
-           CHECKOUT FLOW
-       ============================ */
+    /* Start checkout process */
     startCheckout() {
       if (this.cart.length === 0) return;
       this.goCheckout = true;
       this.showCart = false;
     },
 
+    /* Cancel checkout and return to cart */
     cancelCheckout() {
       this.goCheckout = false;
       this.showCart = true;
     },
 
+    /* Finalize order: send to backend, update spaces, reset UI */
     async finishCheckout(orderDetails) {
       try {
-        /* ===============================
-            1. POST ORDER TO BACKEND
-           =============================== */
+        // Step 1: send order to backend
         await fetch(`${this.backend}/orders`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -218,9 +234,7 @@ export default {
           }),
         });
 
-        /* ===============================
-            2. UPDATE SPACES IN BACKEND
-           =============================== */
+        // Step 2: update lesson spaces in backend
         for (const item of this.cart) {
           const lesson = this.lessons.find((l) => l._id === item._id);
 
@@ -233,9 +247,7 @@ export default {
           });
         }
 
-        /* ===============================
-            3. REFRESH FRONTEND DATA
-           =============================== */
+        // Step 3: refresh lessons and reset cart/UI state
         await this.loadLessons();
         this.cart = [];
         this.goCheckout = false;
