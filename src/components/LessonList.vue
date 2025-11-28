@@ -37,3 +37,9 @@ export default {
   }
 };
 </script>
+
+<style>
+.card button {
+  min-width: 100px;
+}
+</style>

@@ -1,40 +1,254 @@
-:root { color-scheme: light; }
-* { box-sizing: border-box; }
-
-html, body {
+/* =========================================
+   GLOBAL STYLE (Modern Pastel + Smooth UI)
+========================================= */
+body {
   margin: 0;
-  padding: 0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  background: #f7f7f7;
-  color: #111;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(180deg, #f3f5ff 0%, #eef1fa 100%);
+  color: #222;
 }
 
-.wrap { max-width: 1000px; margin: 24px auto; padding: 0 16px; }
-
-header {
-  display: flex; justify-content: space-between; align-items: center;
-  gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+.wrap {
+  max-width: 1150px;
+  margin: 0 auto;
+  padding: 32px 20px;
 }
 
-.controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-input, select, button {
-  padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px; background: white;
+/* =========================================
+   HEADER / CONTROLS
+========================================= */
+h1 {
+  text-align: center;
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 25px;
+  color: #2a2d45;
+  letter-spacing: -1px;
+  animation: fadeIn 0.6s ease;
 }
 
-.grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+header .controls {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* Inputs + Dropdowns */
+input,
+select {
+  padding: 14px 20px;
+  border-radius: 14px;
+  border: 1.5px solid #ccd3ff;
+  background: #ffffffdd;
+  min-width: 300px;
+  outline: none;
+  font-size: 1rem;
+  backdrop-filter: blur(5px);
+  transition: 0.2s ease;
+}
+
+input:focus,
+select:focus {
+  border-color: #91a3ff;
+  box-shadow: 0 0 0 3px #a7b5ff55;
+}
+
+/* =========================================
+   BUTTONS (Primary)
+========================================= */
+button {
+  padding: 12px 26px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+
+  background: #8fa7ff;
+  color: white;
+  transition: 0.2s ease, transform 0.12s ease;
+}
+
+button:hover {
+  background: #7893ff;
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(0px) scale(0.97);
+}
+
+button:disabled {
+  background: #d5d9f0;
+  color: #8a8fa6;
+  cursor: not-allowed;
+}
+
+/* Outline Button (View Cart / Lessons) */
+header .controls button:last-child {
+  background: white;
+  border: 2px solid #333;
+  color: #333;
+}
+
+header .controls button:last-child:hover {
+  background: #f1f1f1;
+}
+
+/* =========================================
+   LESSON CARDS
+========================================= */
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 25px;
+}
+
 .card {
-  background: white; border: 1px solid #e6e6e6; border-radius: 12px;
-  padding: 12px; display: flex; gap: 12px; align-items: center;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+
+  padding: 20px 24px;
+  border-radius: 22px;
+
+  background: #ffffffcc;
+  backdrop-filter: blur(6px);
+
+  box-shadow: 0px 8px 24px rgba(81, 107, 255, 0.12);
+  animation: slideUp 0.4s ease;
 }
-.card img { width: 48px; height: 48px; object-fit: contain; }
 
-.muted { color: #666; }
-.grow { flex: 1; }
-.badge { background: #eee; padding: 2px 8px; border-radius: 999px; }
-button:disabled { opacity: .5; cursor: not-allowed; }
+.card img {
+  width: 70px;
+  height: 70px;
+}
 
-hr { border: none; border-top: 1px solid #eee; margin: 16px 0; }
+.grow {
+  flex: 1;
+}
 
-aside { background: white; border: 1px solid #e6e6e6; border-radius: 12px; padding: 12px; }
-.footer { margin-top: 16px; display: flex; gap: 8px; align-items: center; }
-.total { font-weight: 700; }
+.muted {
+  color: #595f7a;
+}
+
+.badge {
+  padding: 4px 12px;
+  background: #d7e0ff;
+  border-radius: 12px;
+  color: #2e3e77;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* =========================================
+   CART / CHECKOUT
+========================================= */
+aside {
+  margin-top: 30px;
+  padding: 32px 28px;
+  background: #ffffffcc;
+  border-radius: 26px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0px 10px 32px rgba(50, 62, 115, 0.15);
+  animation: fadeIn 0.5s ease;
+}
+
+aside h3 {
+  margin-top: 0;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #2a2d45;
+}
+
+/* =========================================
+   PRETTIER CART ROW
+========================================= */
+aside .card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+}
+
+/* =========================================
+   SLIMMER +/– BUTTONS (Half Size)
+========================================= */
+.qty-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qty-btn {
+  width: 32px;        /* HALF SIZE */
+  height: 32px;       /* HALF SIZE */
+  border-radius: 8px;
+  padding: 0;
+  margin: 0;
+  background: #9fb2ff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  transition: 0.15s ease;
+}
+
+.qty-btn:hover {
+  background: #89a2ff;
+  transform: translateY(-1px);
+}
+
+.qty-btn:active {
+  transform: scale(0.92);
+}
+
+/* Number bubble */
+.qty-num {
+  padding: 6px 14px;
+  background: #e2e6ff;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #2b3360;
+}
+
+/* Footer buttons (Checkout row) */
+aside .footer {
+  margin-top: 24px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* =========================================
+   CHECKOUT FORM
+========================================= */
+form label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+form input {
+  background: #ffffffee;
+  border-radius: 12px;
+}
+
+form .footer {
+  margin-top: 20px;
+}
+
+/* =========================================
+   ANIMATIONS
+========================================= */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
