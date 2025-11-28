@@ -71,7 +71,7 @@ export default {
 
   data() {
     return {
-      backend: "http://localhost:3000", // Backend API base URL
+      backend: "https://asl-backend-tuqj.onrender.com", // Backend URL based from deployment on Render.com
 
       // UI state variables
       search: "",          // Search bar input
